@@ -70,6 +70,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
   TGeoVolume *vol = gGeoManager->MakeTube("Tube", med, rmin, rmax, hz);
   TGeoVolume *vols =
       gGeoManager->MakeTubs("Tube", med, rmin, rmax, hz, phimin, phimax);
+  TGeoVolume *volc =
+      geoManager->MakeCtub("Tube", med, rmin, rmax, hz, phimin, phimax, nxlow, nylow, nzlow, nxhi, nyhi, nzhi);
   gGeoManager->CloseGeometry();
 
   size_t icyl = 0;
