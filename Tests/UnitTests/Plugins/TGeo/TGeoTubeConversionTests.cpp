@@ -133,6 +133,39 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       objVis.write("TGeoConversion_TGeoTube_CylinderSegmentSurface_" +
                    std::to_string(icyl));
       objVis.clear();
+
+
+      auto cylinderCut = TGeoSurfaceConverter::toSurface(
+          *volc->GetShape(), *gGeoIdentity, axes, 1);
+      BOOST_CHECK_NE(cylinderCut, nullptr);
+      BOOST_CHECK_EQUAL(cylinderCut->type(), Surface::Cylinder);
+
+      auto boundsCut =
+          dynamic_cast<const CylinderBounds *>(&(cylinderCut->bounds()));
+      BOOST_CHECK_NE(boundsCut, nullptr);
+      bR = boundsCut->get(CylinderBounds::eR);
+      bhZ = boundsCut->get(CylinderBounds::eHalfLengthZ);
+      double hphi = boundsCut->get(CylinderBounds::eHalfPhiSector);
+      double mphi = boundsCut->get(CylinderBounds::eAveragePhi);
+      double bevelminz = boundsCut->get(CylinerBounds:eBevelMinZ);
+      double bevelmaxz = boundsCut->get(CylinderBounds:eBevelMaxZ);
+      CHECK_CLOSE_ABS(bR, 10.5, s_epsilon);
+      CHECK_CLOSE_ABS(bhZ, hz, s_epsilon);
+      CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(mphi, 0., s_epsilon);
+      CHECK_CLOSE_ABS(bevelminz, -0.25*M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(bevelmaxz, 0.25*M_PI, s_epsilon);
+      GeometryView3D::drawSurface(objVis, *cylinderCut, tgContext);
+      GeometryView3D::drawArrowForward(
+          objVis, center, center + 1.2 * bR * rotation.col(0), 4., 2.5, red);
+      GeometryView3D::drawArrowForward(
+          objVis, center, center + 1.2 * bR * rotation.col(1), 4., 2.5, green);
+      GeometryView3D::drawArrowForward(
+          objVis, center, center + 1.2 * bhZ * rotation.col(2), 4., 2.5, blue);
+      objVis.write("TGeoConversion_TGeoCtub_CylinderCutSurface_" +
+                   std::to_string(icyl));
+      objVis.clear();
+
     } else {
       BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*vols->GetShape(),
                                                         *gGeoIdentity, axes, 1),
