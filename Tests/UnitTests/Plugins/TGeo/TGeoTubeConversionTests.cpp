@@ -54,6 +54,13 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
   double hz = 40.;
   double phimin = -45.;
   double phimax = 45.;
+  double nxlow = 0;
+  double nylow = 0.707;
+  double nzlow = -0.707; 
+  double nxhi = 0.;
+  double nyhi = 0.707;
+  double nzhi = 0.707;
+
 
   new TGeoManager("trd1", "poza9");
   TGeoMaterial *mat = new TGeoMaterial("Al", 26.98, 13, 2.7);
