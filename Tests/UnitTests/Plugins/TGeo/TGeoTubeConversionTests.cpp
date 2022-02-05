@@ -273,6 +273,40 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_DiscSurface) {
                    std::to_string(idisc));
       objVis.clear();
 
+      
+      auto discCut = TGeoSurfaceConverter::toSurface(
+          *volc->GetShape(), *gGeoIdentity, axes, 1);
+      BOOST_CHECK_NE(discCut, nullptr);
+      BOOST_CHECK_EQUAL(discCut->type(), Surface::Disc);
+
+      auto boundsCut =
+          dynamic_cast<const RadialBounds *>(&(discCut->bounds()));
+      BOOST_CHECK_NE(boundsCut, nullptr);
+      bminr = boundsCut->get(RadialBounds::eMinR);
+      bmaxr = boundsCut->get(RadialBounds::eMaxR);
+      double hphi = boundsCut->get(RadialBounds::eHalfPhiSector);
+      double mphi = boundsCut->get(RadialBounds::eAveragePhi);
+      double bevelminz = boundsCut->get(CylinerBounds:eBevelMinZ);
+      double bevelmaxz = boundsCut->get(CylinderBounds:eBevelMaxZ);
+      CHECK_CLOSE_ABS(bminr, rmin, s_epsilon);
+      CHECK_CLOSE_ABS(bmaxr, rmax, s_epsilon);
+      CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(mphi, 0., s_epsilon);
+      CHECK_CLOSE_ABS(bevelminz, -0.25*M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(bevelmaxz, 0.25*M_PI, s_epsilon);
+      GeometryView3D::drawSurface(objVis, *discCut, tgContext);
+      GeometryView3D::drawArrowForward(objVis, center,
+                                       center + 1.2 * bmaxr * Vector3::UnitX(),
+                                       4., 2.5, red);
+      GeometryView3D::drawArrowForward(objVis, center,
+                                       center + 1.2 * bmaxr * Vector3::UnitY(),
+                                       4., 2.5, green);
+      GeometryView3D::drawArrowForward(
+          objVis, center, center + 1.2 * hz * Vector3::UnitZ(), 4., 2.5, blue);
+      objVis.write("TGeoConversion_TGeoCtub_DiscCutSurface_" +
+                   std::to_string(idisc));
+      objVis.clear();
+
     } else {
       BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*vols->GetShape(),
                                                         *gGeoIdentity, axes, 1),
