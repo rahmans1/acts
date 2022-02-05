@@ -210,6 +210,9 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_DiscSurface) {
   vol->SetLineWidth(2);
   TGeoVolume *vols =
       gGeoManager->MakeTubs("Tube", med, rmin, rmax, hz, phimin, phimax);
+  TGeoVolume *volc =
+      geoManager->MakeCtub("Tube", med, rmin, rmax, hz, phimin, phimax, nxlow, nylow, nzlow, nxhi, nyhi, nzhi);
+
   gGeoManager->CloseGeometry();
 
   size_t idisc = 0;
