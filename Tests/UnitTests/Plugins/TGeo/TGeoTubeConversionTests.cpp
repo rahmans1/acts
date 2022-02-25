@@ -147,8 +147,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       bhZ = boundsCut->get(CylinderBounds::eHalfLengthZ);
       hphi = boundsCut->get(CylinderBounds::eHalfPhiSector);
       mphi = boundsCut->get(CylinderBounds::eAveragePhi);
-      double bevelminz = boundsCut->get(CylinerBounds:eBevelMinZ);
-      double bevelmaxz = boundsCut->get(CylinderBounds:eBevelMaxZ);
+      double bevelminz = boundsCut->get(CylinerBounds::eBevelMinZ);
+      double bevelmaxz = boundsCut->get(CylinderBounds::eBevelMaxZ);
       CHECK_CLOSE_ABS(bR, 10.5, s_epsilon);
       CHECK_CLOSE_ABS(bhZ, hz, s_epsilon);
       CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
@@ -286,8 +286,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_DiscSurface) {
       bmaxr = boundsCut->get(RadialBounds::eMaxR);
       hphi = boundsCut->get(RadialBounds::eHalfPhiSector);
       mphi = boundsCut->get(RadialBounds::eAveragePhi);
-      double bevelminz = boundsCut->get(CylinerBounds:eBevelMinZ);
-      double bevelmaxz = boundsCut->get(CylinderBounds:eBevelMaxZ);
+      double bevelminz = boundsCut->get(CylinerBounds::eBevelMinZ);
+      double bevelmaxz = boundsCut->get(CylinderBounds::eBevelMaxZ);
       CHECK_CLOSE_ABS(bminr, rmin, s_epsilon);
       CHECK_CLOSE_ABS(bmaxr, rmax, s_epsilon);
       CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
