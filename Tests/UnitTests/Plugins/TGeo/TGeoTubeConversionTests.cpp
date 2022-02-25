@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       CHECK_CLOSE_ABS(bhZ, hz, s_epsilon);
       CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
       CHECK_CLOSE_ABS(mphi, 0., s_epsilon);
-      CHECK_CLOSE_ABS(bevelminz, -0.25*M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(bevelminz, 0.25*M_PI, s_epsilon);
       CHECK_CLOSE_ABS(bevelmaxz, 0.25*M_PI, s_epsilon);
       GeometryView3D::drawSurface(objVis, *cylinderCut, tgContext);
       GeometryView3D::drawArrowForward(
@@ -292,7 +292,7 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_DiscSurface) {
       CHECK_CLOSE_ABS(bmaxr, rmax, s_epsilon);
       CHECK_CLOSE_ABS(hphi, 0.25 * M_PI, s_epsilon);
       CHECK_CLOSE_ABS(mphi, 0., s_epsilon);
-      CHECK_CLOSE_ABS(bevelminz, -0.25*M_PI, s_epsilon);
+      CHECK_CLOSE_ABS(bevelminz, 0.25*M_PI, s_epsilon);
       CHECK_CLOSE_ABS(bevelmaxz, 0.25*M_PI, s_epsilon);
       GeometryView3D::drawSurface(objVis, *discCut, tgContext);
       GeometryView3D::drawArrowForward(objVis, center,
