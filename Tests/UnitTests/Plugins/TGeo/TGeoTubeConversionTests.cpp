@@ -292,9 +292,6 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_DiscSurface) {
     BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*vol->GetShape(),
                                                       *gGeoIdentity, naxes, 1),
                       std::invalid_argument);
-    BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*volc->GetShape(),
-                                                        *gGeoIdentity, naxes, 1),
-                        std::invalid_argument);
   }
 }
 
