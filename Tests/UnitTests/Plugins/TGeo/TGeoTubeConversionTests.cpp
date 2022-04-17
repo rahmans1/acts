@@ -170,6 +170,9 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*vols->GetShape(),
                                                         *gGeoIdentity, axes, 1),
                         std::invalid_argument);
+      BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*volc->GetShape(),
+                                                        *gGeoIdentity, axes, 1),
+                        std::invalid_argument);
     }
     ++icyl;
   }
