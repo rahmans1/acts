@@ -97,6 +97,11 @@ Acts::TGeoSurfaceConverter::cylinderComponents(const TGeoShape& tgShape,
         }
         halfPhi = 0.5 * (std::max(phi1, phi2) - std::min(phi1, phi2));
         avgPhi = 0.5 * (phi1 + phi2);
+        auto tubeCut = dynamic_cast<const TGeoCtub*>(tube);
+        if (tubeCut) {
+           double nDirlow = tubeCut->GetNlow(); 
+           double nDirhigh = tubeCut->GetNhigh();
+        }
       }
       bounds = std::make_shared<CylinderBounds>(medR, halfZ, halfPhi, avgPhi);
       thickness = deltaR;
