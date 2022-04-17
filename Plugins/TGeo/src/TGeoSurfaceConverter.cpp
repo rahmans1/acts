@@ -249,6 +249,13 @@ Acts::TGeoSurfaceConverter::discComponents(const TGeoShape& tgShape,
         }
         halfPhi = 0.5 * (std::max(phi1, phi2) - std::min(phi1, phi2));
         avgPhi = 0.5 * (phi1 + phi2);
+        // Check if it's a cut tube
+        auto tubeCut = dynamic_cast<const TGeoCtub*>(tube);
+        if (tubeCut) {
+          throw std::invalid_argument(
+              "TGeoCtub -> CylinderSurface is not allowed for discs."
+              "Please use TGeoTube or TGeoTubeSeg.");
+        }
       }
       bounds = std::make_shared<RadialBounds>(minR, maxR, halfPhi, avgPhi);
       thickness = 2 * halfZ;
