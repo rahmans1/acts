@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       bhZ = boundsCut->get(CylinderBounds::eHalfLengthZ);
       hphi = boundsCut->get(CylinderBounds::eHalfPhiSector);
       mphi = boundsCut->get(CylinderBounds::eAveragePhi);
-      double bevelminz = boundsCut->get(CylinerBounds::eBevelMinZ);
+      double bevelminz = boundsCut->get(CylinderBounds::eBevelMinZ);
       double bevelmaxz = boundsCut->get(CylinderBounds::eBevelMaxZ);
       CHECK_CLOSE_ABS(bR, 10.5, s_epsilon);
       CHECK_CLOSE_ABS(bhZ, hz, s_epsilon);
