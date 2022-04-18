@@ -258,7 +258,7 @@ Acts::TGeoSurfaceConverter::discComponents(const TGeoShape& tgShape,
         auto tubeCut = dynamic_cast<const TGeoCtub*>(tube);
         if (tubeCut) {
           throw std::invalid_argument(
-              "TGeoCtub -> CylinderSurface is not allowed for discs."
+              "TGeoCtub -> DiscSurface is not allowed."
               "Please use TGeoTube or TGeoTubeSeg.");
         }
       }
