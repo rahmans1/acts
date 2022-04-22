@@ -60,8 +60,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
   double nxhi = 0.;
   double nyhi = 0.707;
   double nzhi = 0.707;
-  double nxlowInvalidNormal = 0.707
-  double nxhiInvalidNormal = 0.707
+  double nxlowInvalidNormal = 0.707;
+  double nxhiInvalidNormal = 0.707;
 
 
   new TGeoManager("trd1", "poza9");
