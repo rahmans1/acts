@@ -60,6 +60,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
   double nxhi = 0.;
   double nyhi = 0.707;
   double nzhi = 0.707;
+  double nxlowInvalidNormal = 0.707
+  double nxhiInvalidNormal = 0.707
 
 
   new TGeoManager("trd1", "poza9");
@@ -72,6 +74,8 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
       gGeoManager->MakeTubs("Tube", med, rmin, rmax, hz, phimin, phimax);
   TGeoVolume *volc =
       gGeoManager->MakeCtub("Tube", med, rmin, rmax, hz, phimin, phimax, nxlow, nylow, nzlow, nxhi, nyhi, nzhi);
+  TGeoVolume *volcInvalidNormal = 
+      gGeoManager->MakeCtub("Tube", med, rmin, rmax, hz, phimin, phimax, nxlowInvalidNormal, nylow, nzlow, nxhiInvalidNormal, nyhi, nzhi);
   gGeoManager->CloseGeometry();
 
   size_t icyl = 0;
@@ -174,6 +178,9 @@ BOOST_AUTO_TEST_CASE(TGeoTube_to_CylinderSurface) {
                                                         *gGeoIdentity, axes, 1),
                         std::invalid_argument);
     }
+    BOOST_CHECK_THROW(TGeoSurfaceConverter::toSurface(*volcInvalidNormal->GetShape(),
+                                                        *gGeoIdentity, axes, 1),
+                        std::invalid_argument);
     ++icyl;
   }
 
