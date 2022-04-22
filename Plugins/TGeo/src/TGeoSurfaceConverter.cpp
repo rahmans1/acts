@@ -99,8 +99,8 @@ Acts::TGeoSurfaceConverter::cylinderComponents(const TGeoShape& tgShape,
         avgPhi = 0.5 * (phi1 + phi2);
         auto tubeCut = dynamic_cast<const TGeoCtub*>(tube);
         if (tubeCut) {
-          double nDirlow = tubeCut->GetNlow(); 
-          double nDirhigh = tubeCut->GetNhigh();
+          const double* nDirlow = tubeCut->GetNlow(); 
+          const double* nDirhigh = tubeCut->GetNhigh();
           if (not(nDirlow[0]==0 and nDirhigh[0]==0)){
             throw std::invalid_argument(
               "The x-components of normals of boundary surfaces must be 0"
