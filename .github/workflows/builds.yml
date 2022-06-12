@@ -11,7 +11,7 @@ env:
   CTEST_OUTPUT_ON_FAILURE: 1
   HOMEBREW_NO_INSTALL_CLEANUP: 1
   CCACHE_DIR: ${{ github.workspace }}/ccache
-  CCACHE_MAXSIZE: 10G
+  CCACHE_MAXSIZE: 2G
   CCACHE_KEY_SUFFIX: r1
 
 jobs:
@@ -36,7 +36,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-${{ matrix.image }}_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-${{ matrix.image }}_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-${{ matrix.image }}_${{ env.CCACHE_KEY_SUFFIX }}_
 
       - name: Configure
         # setting CMAKE_CXX_STANDARD=17 is a workaround for a bug in the
@@ -108,7 +110,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-linux_ubuntu_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-linux_ubuntu_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-linux_ubuntu_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
@@ -279,7 +283,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-linux-nodeps_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-linux-nodeps_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-linux-nodeps_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
@@ -358,14 +364,16 @@ jobs:
           brew install cmake eigen ninja ccache
           && sudo mkdir /usr/local/acts
           && sudo chown $USER /usr/local/acts
-          && wget --verbose --progress=dot:giga --continue --retry-connrefused --tries=5 --timeout=2 -O deps.tar.gz https://acts.web.cern.ch/ci/macOS/deps.5e0adfa.tar.gz
+          && wget --verbose --progress=dot:giga --continue --retry-connrefused --tries=5 --timeout=2 -O deps.tar.gz https://acts.web.cern.ch/ci/macOS/deps.395f534.tar.gz
           && tar -xf deps.tar.gz -C /usr/local/acts
 
       - name: Cache build
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
@@ -419,7 +427,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-cuda_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-cuda_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-cuda_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
@@ -444,7 +454,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-exatrkx_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-exatrkx_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-exatrkx_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
@@ -472,7 +484,9 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ${{ github.workspace }}/ccache
-          key: ${{ runner.os  }}-ccache-sycl_${{ env.CCACHE_KEY_SUFFIX  }}
+          key: ${{ runner.os  }}-ccache-sycl_${{ env.CCACHE_KEY_SUFFIX }}_${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os  }}-ccache-sycl_${{ env.CCACHE_KEY_SUFFIX }}_
 
 
       - name: Configure
