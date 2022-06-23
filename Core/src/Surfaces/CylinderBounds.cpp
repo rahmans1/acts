@@ -54,7 +54,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
     // -Z   0  Z
     ///////////////////////////////////
     float localx =
-        lposition[0] > radius ? 2 * radius - lposition[0] : lposition[0];
+        lposition[0] > M_PI * radius ? 2 * M_PI * radius - lposition[0] : lposition[0];
     Vector2 shiftedlposition = shifted(lposition);
     if ((std::fabs(shiftedlposition[0]) <= halfPhi &&
          std::fabs(shiftedlposition[1]) <= halfLengthZ))
