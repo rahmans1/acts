@@ -53,14 +53,9 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
     // \|______|/ r/phi
     // -Z   0  Z
     ///////////////////////////////////
-    float localx =
-        lposition[0] > M_PI * radius ? -2 * M_PI * radius + lposition[0] : lposition[0];
     Vector2 shiftedlposition = shifted(lposition);
     if ((std::fabs(shiftedlposition[0]) <= halfPhi &&
          std::fabs(shiftedlposition[1]) <= halfLengthZ))
-      return true;
-    else if ((lposition[1] >= -(localx * std::tan(bevelMinZ) + halfLengthZ)) &&
-             (lposition[1] <= (localx * std::tan(bevelMaxZ) + halfLengthZ)))
       return true;
     else {
       // check within tolerance
