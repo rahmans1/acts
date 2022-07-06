@@ -44,7 +44,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
 
   double halfLengthZ = get(eHalfLengthZ);
   double halfPhi = get(eHalfPhiSector);
-  if (bevelMinZ != 0. && bevelMaxZ != 0.) {
+  if (bevelMinZ != 0. || bevelMaxZ != 0.) {
     double radius = get(eR);
     // Beleved sides will unwrap to a trapezoid
     ///////////////////////////////////
@@ -54,25 +54,37 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
     // -Z   0  Z
     ///////////////////////////////////
     Vector2 shiftedlposition = shifted(lposition);
-    if ((std::fabs(shiftedlposition[0]) <= halfPhi &&
-         std::fabs(shiftedlposition[1]) <= halfLengthZ))
+    if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) <= halfPhi &&
+        std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ)
       return true;
     else {
       // check within tolerance
       auto boundaryCheck = bcheck.transformed(jacobian());
 
-      Vector2 lowerLeft = {-radius, -halfLengthZ};
-      Vector2 middleLeft = {0., -(halfLengthZ + radius * std::tan(bevelMinZ))};
-      Vector2 upperLeft = {radius, -halfLengthZ};
-      Vector2 upperRight = {radius, halfLengthZ};
-      Vector2 middleRight = {0., (halfLengthZ + radius * std::tan(bevelMaxZ))};
-      Vector2 lowerRight = {-radius, halfLengthZ};
-      Vector2 vertices[] = {lowerLeft,  middleLeft,  upperLeft,
-                            upperRight, middleRight, lowerRight};
-      Vector2 closestPoint =
-          boundaryCheck.computeClosestPointOnPolygon(lposition, vertices);
-
-      return boundaryCheck.isTolerated(closestPoint - lposition);
+      double distanceToBoundary = 0;
+      if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) > halfPhi &&
+          std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ)
+        distanceToBoundary = std::fabs(shiftedlposition[Acts::eBoundLoc0]) - halfPhi;
+        return boundaryCheck.isTolerated({distanceToBoundary,0.0})
+      else {
+        if (lposition[Acts::eBoundLoc0] >= M_PI*radius && lposition[Acts::eBoundLoc1]>halfLengthZ)
+          distanceToBoundary = lposition[Acts::eBoundLoc1] \
+                               -(M_PI*radius*std::tan(bevelMaxZ)*std::cos(lposition[Acts::eBoundLoc0]/radius-M_PI)/2.0 \
+                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0)
+        else if (lposition[Acts::eBoundLoc0] < M_PI*radius && lposition[Acts::eBoundLoc1]>halfLengthZ)
+          distanceToBoundary = lposition[Acts::eBoundLoc1] \
+                               -(-M_PI*radius*std::tan(bevelMaxZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
+                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0) 
+        else if (lposition[Acts::eBoundLoc0] >= M_PI*radius && lposition[Acts::eBoundLoc1]< -halfLengthZ)
+          distanceToBoundary = lposition[Acts::eBoundLoc1] \
+                               -(-M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius-M_PI)/2.0 \
+                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0)
+        else
+          distanceToBoundary = lposition[Acts::eBoundLoc1] \
+                               -(M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
+                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0) 
+        return boundaryCheck.isTolerated({0.0,distanceToBoundary});
+      }        
     }
   } else {
     return bcheck.transformed(jacobian())
