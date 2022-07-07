@@ -70,19 +70,19 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
         if (lposition[Acts::eBoundLoc0] >= M_PI*radius && lposition[Acts::eBoundLoc1]>halfLengthZ)
           distanceToBoundary = lposition[Acts::eBoundLoc1] \
                                -(M_PI*radius*std::tan(bevelMaxZ)*std::cos(lposition[Acts::eBoundLoc0]/radius-M_PI)/2.0 \
-                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0)
+                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0);
         else if (lposition[Acts::eBoundLoc0] < M_PI*radius && lposition[Acts::eBoundLoc1]>halfLengthZ)
           distanceToBoundary = lposition[Acts::eBoundLoc1] \
                                -(-M_PI*radius*std::tan(bevelMaxZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
-                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0) 
+                               +halfLengthZ+M_PI*radius*std::tan(bevelMaxZ)/2.0); 
         else if (lposition[Acts::eBoundLoc0] >= M_PI*radius && lposition[Acts::eBoundLoc1]< -halfLengthZ)
           distanceToBoundary = lposition[Acts::eBoundLoc1] \
                                -(-M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius-M_PI)/2.0 \
-                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0)
+                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0);
         else
           distanceToBoundary = lposition[Acts::eBoundLoc1] \
                                -(M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
-                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0) 
+                               -halfLengthZ-M_PI*radius*std::tan(bevelMinZ)/2.0); 
         return boundaryCheck.isTolerated({0.0,distanceToBoundary});
       }        
     }
