@@ -63,10 +63,10 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
 
       double distanceToBoundary = 0;
       if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) > halfPhi &&
-          std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ)
+          std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ) {
         distanceToBoundary = std::fabs(shiftedlposition[Acts::eBoundLoc0]) - halfPhi;
-        return boundaryCheck.isTolerated({distanceToBoundary,0.0})
-      else {
+        return boundaryCheck.isTolerated({distanceToBoundary,0.0});
+      } else {
         if (lposition[Acts::eBoundLoc0] >= M_PI*radius && lposition[Acts::eBoundLoc1]>halfLengthZ)
           distanceToBoundary = lposition[Acts::eBoundLoc1] \
                                -(M_PI*radius*std::tan(bevelMaxZ)*std::cos(lposition[Acts::eBoundLoc0]/radius-M_PI)/2.0 \
