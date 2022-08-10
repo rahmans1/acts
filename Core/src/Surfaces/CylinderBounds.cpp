@@ -44,6 +44,8 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
   double radius = get(eR);
   double halfLengthZ = get(eHalfLengthZ);
   double halfPhi = get(eHalfPhiSector);
+  Vector2 shiftedlposition = shifted(lposition);
+  
   if (bevelMinZ != 0. || bevelMaxZ != 0.) {
     // Beleved sides will unwrap to a trapezoid
     ///////////////////////////////////
@@ -52,7 +54,6 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
     // \|______|/ r/phi
     // -Z   0  Z
     ///////////////////////////////////
-    Vector2 shiftedlposition = shifted(lposition);
     if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) <= halfPhi &&
         std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ)
       return true;
