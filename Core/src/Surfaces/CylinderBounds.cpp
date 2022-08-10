@@ -41,11 +41,10 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
                                   const BoundaryCheck& bcheck) const {
   double bevelMinZ = get(eBevelMinZ);
   double bevelMaxZ = get(eBevelMaxZ);
-
+  double radius = get(eR);
   double halfLengthZ = get(eHalfLengthZ);
   double halfPhi = get(eHalfPhiSector);
   if (bevelMinZ != 0. || bevelMaxZ != 0.) {
-    double radius = get(eR);
     // Beleved sides will unwrap to a trapezoid
     ///////////////////////////////////
     //  ________
