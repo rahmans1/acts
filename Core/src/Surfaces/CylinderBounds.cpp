@@ -57,7 +57,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
     if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) <= halfPhi &&
         std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ)
       return true;
-    else {
+    } else {
       // check within tolerance
       auto boundaryCheck = bcheck.transformed(jacobian());
 
