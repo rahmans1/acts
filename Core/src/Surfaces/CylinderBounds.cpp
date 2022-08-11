@@ -45,6 +45,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
   double halfLengthZ = get(eHalfLengthZ);
   double halfPhi = get(eHalfPhiSector);
   Vector2 shiftedlposition = shifted(lposition);
+  auto boundaryCheck = bcheck.transformed(jacobian());
   
   if (bevelMinZ != 0. || bevelMaxZ != 0.) {
     // Beleved sides will unwrap to a trapezoid
@@ -59,8 +60,6 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
       return true;
     else {
       // check within tolerance
-      auto boundaryCheck = bcheck.transformed(jacobian());
-
       double distanceToBoundary = 0;
       if (std::fabs(shiftedlposition[Acts::eBoundLoc0]) > halfPhi &&
           std::fabs(shiftedlposition[Acts::eBoundLoc1]) <= halfLengthZ) {
@@ -87,9 +86,8 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
       }        
     }
   } else {
-    return bcheck.transformed(jacobian())
-        .isInside(shifted(lposition), Vector2(-halfPhi, -halfLengthZ),
-                  Vector2(halfPhi, halfLengthZ));
+    return boundaryCheck.isInside(shifted(lposition), Vector2(-halfPhi, -halfLengthZ),
+                                  Vector2(halfPhi, halfLengthZ));
   }
 }
 
