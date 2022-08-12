@@ -24,23 +24,22 @@ BOOST_AUTO_TEST_SUITE(Surfaces)
 
 BOOST_AUTO_TEST_CASE(CylinderBoundsConstruction) {
   /// test default construction
-  // CylinderBounds defaultConstructedCylinderBounds;  // deleted
-  double radius(0.5), halfz(10.), halfphi(M_PI / 2.0), averagePhi(M_PI / 2.0),
-      minBevelZ(-M_PI / 4), maxBevelZ(M_PI / 6);
+  double radius(0.5), halfz(10.), 
+         halfphi(M_PI / 2.0), averagePhi(M_PI / 2.0),
+         minBevelZ(-M_PI / 4), maxBevelZ(M_PI / 6);
   BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz).type(),
                     SurfaceBounds::eCylinder);
   BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, halfphi).type(),
                     SurfaceBounds::eCylinder);
   BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, halfphi, averagePhi).type(),
                     SurfaceBounds::eCylinder);
-  BOOST_CHECK_EQUAL(
-      CylinderBounds(radius, halfz, (double)M_PI, (double)0., minBevelZ).type(),
-      SurfaceBounds::eCylinder);
-  BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, (double)M_PI, (double)0.,
-                                   minBevelZ, maxBevelZ)
-                        .type(),
+  BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, halfphi, averagePhi, minBevelZ).type(),
                     SurfaceBounds::eCylinder);
-  //
+  BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, halfphi, averagePhi, minBevelZ, maxBevelZ).type(),
+                    SurfaceBounds::eCylinder);
+  BOOST_CHECK_EQUAL(CylinderBounds(radius, halfz, (double)M_PI, (double)0., minBevelZ, maxBevelZ).type(),
+                    SurfaceBounds::eCylinder);
+  
   /// test copy construction;
   CylinderBounds cylinderBounds(radius, halfz);
   CylinderBounds copyConstructedCylinderBounds(cylinderBounds);
