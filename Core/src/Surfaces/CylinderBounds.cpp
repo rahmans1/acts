@@ -77,8 +77,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
         distanceToBoundary = lposition[Acts::eBoundLoc1] \
                              -(M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
                              -halfLengthZ); 
-      return boundaryCheck.isTolerated({0.0,distanceToBoundary});
-      }        
+      return boundaryCheck.isTolerated({0.0,distanceToBoundary});        
     }
   } 
 }
