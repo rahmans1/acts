@@ -51,7 +51,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
   bool insideNominalCylinder = boundaryCheck.isInside(shiftedlposition, Vector2(-halfPhi, upperRightZNominalCylinder),
                                                       Vector2(halfPhi, lowerLeftZNominalCylinder));
   
-  if (insideNominalCylinder) {
+  if (insideNominalCylinder)
     return true;
   else {
     // check within tolerance
