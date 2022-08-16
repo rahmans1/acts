@@ -77,7 +77,7 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
         distanceToBoundary = lposition[Acts::eBoundLoc1] \
                              -(M_PI*radius*std::tan(bevelMinZ)*std::cos(lposition[Acts::eBoundLoc0]/radius)/2.0 \
                              -halfLengthZ); 
-      return boundaryCheck.isTolerated({0.0,distanceToBoundary});        
+      return boundaryCheck.isTolerated({0.0,std::fabs(distanceToBoundary)-s_onSurfaceTolerance});        
     }
   } 
 }
@@ -87,34 +87,18 @@ bool Acts::CylinderBounds::inside3D(const Vector3& position,
   // additional tolerance from the boundary check if configred
   bool checkAbsolute = bcheck.m_type == BoundaryCheck::Type::eAbsolute;
 
-  // this fast check only applies to closed cylindrical bounds
-  double addToleranceR =
-      (checkAbsolute && m_closed) ? bcheck.m_tolerance[0] : 0.;
+  // fast check
+  double addToleranceR = checkAbsolute ? bcheck.m_tolerance[0] : 0.;
   double addToleranceZ = checkAbsolute ? bcheck.m_tolerance[1] : 0.;
   // check if the position compatible with the radius
   if ((s_onSurfaceTolerance + addToleranceR) <=
       std::abs(perp(position) - get(eR))) {
     return false;
-  } else if (checkAbsolute && m_closed) {
-    double bevelMinZ = get(eBevelMinZ);
-    double bevelMaxZ = get(eBevelMaxZ);
-
-    double addedMinZ =
-        bevelMinZ != 0. ? position.y() * std::sin(bevelMinZ) : 0.;
-    double addedMaxZ =
-        bevelMinZ != 0. ? position.y() * std::sin(bevelMaxZ) : 0.;
-
-    return ((s_onSurfaceTolerance + addToleranceZ + get(eHalfLengthZ) +
-             addedMinZ) >= position.z()) &&
-           ((s_onSurfaceTolerance + addToleranceZ + get(eHalfLengthZ) +
-             addedMaxZ) <= position.z());
+  } else {
+  // detailed but slow check
+    return inside({get(eR)*position.phi(), position.z()}, bcheck);
   }
-  // detailed, but slower check
-  Vector2 lpos(detail::radian_sym(phi(position) - get(eAveragePhi)),
-               position.z());
-  return bcheck.transformed(jacobian())
-      .isInside(lpos, Vector2(-get(eHalfPhiSector), -get(eHalfLengthZ)),
-                Vector2(get(eHalfPhiSector), get(eHalfLengthZ)));
+    
 }
 
 std::ostream& Acts::CylinderBounds::toStream(std::ostream& sl) const {
