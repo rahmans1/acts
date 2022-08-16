@@ -96,7 +96,7 @@ bool Acts::CylinderBounds::inside3D(const Vector3& position,
     return false;
   } else {
   // detailed but slow check
-    return inside({get(eR)*position.phi(), position.z()}, bcheck);
+    return inside({get(eR)*phi(position), position.z()}, bcheck);
   }
     
 }
