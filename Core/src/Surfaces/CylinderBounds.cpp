@@ -89,13 +89,16 @@ bool Acts::CylinderBounds::inside3D(const Vector3& position,
 
   // fast check
   double addToleranceR = checkAbsolute ? bcheck.m_tolerance[0] : 0.;
-  double addToleranceZ = checkAbsolute ? bcheck.m_tolerance[1] : 0.;
+  double addToleranceZ = checkAbsolute ? bcheck.m_tolerance[1] : 0.;   
   // check if the position compatible with the radius
-  if ((s_onSurfaceTolerance + addToleranceR) <=
-      std::abs(perp(position) - get(eR))) {
+  if ((s_onSurfaceTolerance + addToleranceR) <= std::abs(perp(position) - get(eR))) {
     return false;
+  } else if (get(eBevelMinZ)==0 && get(eBevelMaxZ)==0 && 
+             ((s_onSurfaceTolerance + addToleranceZ) <= (std::abs(position.z()) - get(eHalfLengthZ)))) {
+    // fast check on z position for nominal cylinder
+    return false;  
   } else {
-  // detailed but slow check
+    // detailed but slow check
     return inside({get(eR)*phi(position), position.z()}, bcheck);
   }
     
