@@ -48,8 +48,8 @@ bool Acts::CylinderBounds::inside(const Vector2& lposition,
   auto boundaryCheck = bcheck.transformed(jacobian());
   double upperRightZNominalCylinder = (bevelMaxZ>=0) ? halfLengthZ-M_PI*radius*tan(bevelMaxZ)/2 : halfLengthZ+M_PI*radius*tan(bevelMaxZ)/2;
   double lowerLeftZNominalCylinder = (bevelMinZ>=0) ? -halfLengthZ+M_PI*radius*tan(bevelMinZ)/2 : -halfLengthZ-M_PI*radius*tan(bevelMinZ)/2;
-  bool insideNominalCylinder = boundaryCheck.isInside(shiftedlposition, Vector2(-halfPhi, upperRightZNominalCylinder),
-                                                      Vector2(halfPhi, lowerLeftZNominalCylinder));
+  bool insideNominalCylinder = boundaryCheck.isInside(shiftedlposition, Vector2(-halfPhi, lowerLeftZNominalCylinder),
+                                                      Vector2(halfPhi, upperRightZNominalCylinder));
   
   if (insideNominalCylinder)
     return true;
