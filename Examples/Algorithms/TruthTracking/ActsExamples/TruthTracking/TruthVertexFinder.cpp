@@ -19,7 +19,7 @@
 
 ActsExamples::TruthVertexFinder::TruthVertexFinder(const Config& config,
                                                    Acts::Logging::Level level)
-    : BareAlgorithm("TruthVertexFinder", level), m_cfg(config) {
+    : IAlgorithm("TruthVertexFinder", level), m_cfg(config) {
   if (m_cfg.inputParticles.empty()) {
     throw std::invalid_argument("Missing input truth particles collection");
   }
@@ -39,7 +39,7 @@ ActsExamples::ProcessCode ActsExamples::TruthVertexFinder::execute(
 
   // assumes the begin/end iterator references the particles container
   auto addProtoVertex = [&](SimParticleContainer::const_iterator begin,
-                            SimParticleContainer::const_iterator end) {
+                            const SimParticleContainer::const_iterator& end) {
     ProtoVertex protoVertex;
     protoVertex.reserve(std::distance(begin, end));
     // determine each particle index

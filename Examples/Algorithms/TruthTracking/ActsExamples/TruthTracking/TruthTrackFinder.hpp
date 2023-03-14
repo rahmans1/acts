@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include "ActsExamples/Framework/BareAlgorithm.hpp"
+#include "ActsExamples/Framework/IAlgorithm.hpp"
 
 namespace ActsExamples {
 
@@ -19,7 +19,7 @@ namespace ActsExamples {
 /// hits. This algorithm should be able to replace any other real track finder
 /// in the reconstruction chain e.g. to validate algorithms further down
 /// the chain.
-class TruthTrackFinder final : public BareAlgorithm {
+class TruthTrackFinder final : public IAlgorithm {
  public:
   struct Config {
     /// The input truth particles that should be used to create proto tracks.
@@ -32,7 +32,7 @@ class TruthTrackFinder final : public BareAlgorithm {
 
   TruthTrackFinder(const Config& config, Acts::Logging::Level level);
 
-  ProcessCode execute(const AlgorithmContext& ctx) const override final;
+  ProcessCode execute(const AlgorithmContext& ctx) const final;
 
   /// Get readonly access to the config parameters
   const Config& config() const { return m_cfg; }

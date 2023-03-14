@@ -40,7 +40,7 @@ struct Options {
   double stepSizeCutOff = 0.0;
   std::size_t maxRungeKuttaStepTrials = 10;
   double mass = 1.0;
-  LoggerWrapper logger = Acts::getDummyLogger();
+  const Acts::Logger &logger = Acts::getDummyLogger();
 };
 
 struct Navigation {};
@@ -212,6 +212,10 @@ void test_multi_stepper_vs_eigen_stepper() {
 
   MultiStepper multi_stepper(defaultBField);
   SingleStepper single_stepper(defaultBField);
+
+  for (auto cmp : multi_stepper.componentIterable(multi_state)) {
+    cmp.status() = Acts::Intersection3D::Status::reachable;
+  }
 
   // Do some steps and check that the results match
   for (int i = 0; i < 10; ++i) {
@@ -706,20 +710,24 @@ void propagator_instatiation_test_function() {
 
   auto surface = Acts::Surface::makeShared<Acts::PlaneSurface>(
       Vector3::Zero(), Vector3{1.0, 0.0, 0.0});
-  PropagatorOptions options(geoCtx, magCtx, Acts::getDummyLogger());
+  PropagatorOptions options(geoCtx, magCtx);
 
   std::vector<std::tuple<double, BoundVector, std::optional<BoundSymMatrix>>>
       cmps(4, {0.25, BoundVector::Ones().eval(),
                BoundSymMatrix::Identity().eval()});
   MultiComponentBoundTrackParameters<SinglyCharged> pars(surface, cmps);
 
+  // This only checks that this compiles, not that it runs without errors
+  // @TODO: Add test that checks the target aborter works corretly
+
   // Instantiate with target
-  propagator.template propagate<decltype(pars), decltype(options),
-                                MultiStepperSurfaceReached>(pars, *surface,
-                                                            options);
+  using type_a =
+      decltype(propagator.template propagate<decltype(pars), decltype(options),
+                                             MultiStepperSurfaceReached>(
+          pars, *surface, options));
 
   // Instantiate without target
-  propagator.propagate(pars, options);
+  using tybe_b = decltype(propagator.propagate(pars, options));
 }
 
 BOOST_AUTO_TEST_CASE(propagator_instatiation_test) {

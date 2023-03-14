@@ -11,8 +11,9 @@
 
 template <typename E, typename A>
 Acts::EigenStepper<E, A>::EigenStepper(
-    std::shared_ptr<const MagneticFieldProvider> bField)
-    : m_bField(std::move(bField)) {}
+
+    std::shared_ptr<const MagneticFieldProvider> bField, double overstepLimit)
+    : m_bField(std::move(bField)), m_overstepLimit(overstepLimit) {}
 
 template <typename E, typename A>
 template <typename charge_t>
@@ -119,7 +120,7 @@ Acts::Result<double> Acts::EigenStepper<E, A>::step(
   // Runge-Kutta integrator state
   auto& sd = state.stepping.stepData;
   double error_estimate = 0.;
-  double h2, half_h;
+  double h2 = 0, half_h = 0;
 
   auto pos = position(state.stepping);
   auto dir = direction(state.stepping);
