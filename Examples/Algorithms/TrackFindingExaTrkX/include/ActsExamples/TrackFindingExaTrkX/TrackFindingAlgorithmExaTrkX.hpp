@@ -9,14 +9,14 @@
 #pragma once
 
 #include "Acts/Plugins/ExaTrkX/ExaTrkXTrackFindingBase.hpp"
-#include "ActsExamples/Framework/BareAlgorithm.hpp"
+#include "ActsExamples/Framework/IAlgorithm.hpp"
 
 #include <string>
 #include <vector>
 
 namespace ActsExamples {
 
-class TrackFindingAlgorithmExaTrkX final : public BareAlgorithm {
+class TrackFindingAlgorithmExaTrkX final : public IAlgorithm {
  public:
   struct Config {
     /// Input spacepoints collection.
@@ -40,7 +40,7 @@ class TrackFindingAlgorithmExaTrkX final : public BareAlgorithm {
   /// @param level is the logging level
   TrackFindingAlgorithmExaTrkX(Config cfg, Acts::Logging::Level lvl);
 
-  virtual ~TrackFindingAlgorithmExaTrkX() {}
+  ~TrackFindingAlgorithmExaTrkX() override = default;
 
   /// Framework execute method of the track finding algorithm
   ///

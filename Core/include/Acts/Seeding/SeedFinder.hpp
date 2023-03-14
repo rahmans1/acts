@@ -1,6 +1,6 @@
 // This file is part of the Acts project.
 //
-// Copyright (C) 2018 CERN for the benefit of the Acts project
+// Copyright (C) 2023 CERN for the benefit of the Acts project
 //
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
@@ -8,11 +8,15 @@
 
 #pragma once
 
+#include "Acts/Definitions/Units.hpp"
 #include "Acts/Geometry/Extent.hpp"
+#include "Acts/Seeding/CandidatesForMiddleSp.hpp"
 #include "Acts/Seeding/InternalSeed.hpp"
 #include "Acts/Seeding/InternalSpacePoint.hpp"
+#include "Acts/Seeding/SeedFilter.hpp"
 #include "Acts/Seeding/SeedFinderConfig.hpp"
 #include "Acts/Seeding/SeedFinderUtils.hpp"
+#include "Acts/Seeding/SpacePointGrid.hpp"
 
 #include <array>
 #include <list>
@@ -49,26 +53,28 @@ class SeedFinder {
     std::vector<float> etaVec;
     std::vector<float> ptVec;
 
-    std::vector<std::pair<
-        float, std::unique_ptr<const InternalSeed<external_spacepoint_t>>>>
-        seedsPerSpM;
+    // managing seed candidates for SpM
+    CandidatesForMiddleSp<InternalSpacePoint<external_spacepoint_t>>
+        candidates_collector;
   };
 
   /// The only constructor. Requires a config object.
   /// @param config the configuration for the SeedFinder
-  SeedFinder(Acts::SeedFinderConfig<external_spacepoint_t> config);
+  SeedFinder(const Acts::SeedFinderConfig<external_spacepoint_t>& config);
   ~SeedFinder() = default;
   /**    @name Disallow default instantiation, copy, assignment */
   //@{
-  SeedFinder() = delete;
+  SeedFinder() = default;
   SeedFinder(const SeedFinder<external_spacepoint_t, platform_t>&) = delete;
   SeedFinder<external_spacepoint_t, platform_t>& operator=(
-      const SeedFinder<external_spacepoint_t, platform_t>&) = delete;
+      const SeedFinder<external_spacepoint_t, platform_t>&) = default;
   //@}
 
   /// Create all seeds from the space points in the three iterators.
   /// Can be used to parallelize the seed creation
+  /// @param options frequently changing configuration (like beam position)
   /// @param state State object that holds memory used
+  /// @param grid The grid with space points
   /// @param outIt Output iterator for the seeds in the group
   /// @param bottomSPs group of space points to be used as innermost SP in a seed.
   /// @param middleSPs group of space points to be used as middle SP in a seed.
@@ -78,10 +84,12 @@ class SeedFinder {
   /// @note Ranges must be separate objects for each parallel call.
   template <template <typename...> typename container_t, typename sp_range_t>
   void createSeedsForGroup(
-      SeedingState& state,
+      const Acts::SeedFinderOptions& options, SeedingState& state,
+      Acts::SpacePointGrid<external_spacepoint_t>& grid,
       std::back_insert_iterator<container_t<Seed<external_spacepoint_t>>> outIt,
-      sp_range_t bottomSPs, sp_range_t middleSPs, sp_range_t topSPs,
-      const Acts::Range1D<float> rMiddleSPRange) const;
+      const sp_range_t& bottomSPs, const std::size_t middleSPs,
+      const sp_range_t& topSPs,
+      const Acts::Range1D<float>& rMiddleSPRange) const;
 
   /// @brief Compatibility method for the new-style seed finding API.
   ///
@@ -95,6 +103,8 @@ class SeedFinder {
   /// require backwards-compatibility.
   ///
   /// @tparam sp_range_t container type for the seed point collections.
+  /// @param options frequently changing configuration (like beam position)
+  /// @param grid The grid with space points
   /// @param bottomSPs group of space points to be used as innermost SP in a
   /// seed.
   /// @param middleSPs group of space points to be used as middle SP in a seed.
@@ -102,7 +112,24 @@ class SeedFinder {
   /// @returns a vector of seeds.
   template <typename sp_range_t>
   std::vector<Seed<external_spacepoint_t>> createSeedsForGroup(
-      sp_range_t bottomSPs, sp_range_t middleSPs, sp_range_t topSPs) const;
+      const Acts::SeedFinderOptions& options,
+      Acts::SpacePointGrid<external_spacepoint_t>& grid,
+      const sp_range_t& bottomSPs, const std::size_t middleSPs,
+      const sp_range_t& topSPs) const;
+
+ private:
+  template <typename sp_range_t, typename out_range_t>
+  void getCompatibleDoublets(
+      const Acts::SeedFinderOptions& options,
+      Acts::SpacePointGrid<external_spacepoint_t>& grid, sp_range_t& otherSPs,
+      const InternalSpacePoint<external_spacepoint_t>& mediumSP,
+      out_range_t& outVec, const float& deltaRMinSP, const float& deltaRMaxSP,
+      bool isBottom) const;
+
+  void filterCandidates(InternalSpacePoint<external_spacepoint_t>& SpM,
+                        const Acts::SeedFinderOptions& options,
+                        SeedFilterState& seedFilterState,
+                        SeedingState& state) const;
 
  private:
   Acts::SeedFinderConfig<external_spacepoint_t> m_config;

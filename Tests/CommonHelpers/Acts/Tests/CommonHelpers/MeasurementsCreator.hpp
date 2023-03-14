@@ -71,10 +71,8 @@ struct MeasurementsCreator {
   /// @param [out] result Vector of matching surfaces
   template <typename propagator_state_t, typename stepper_t>
   void operator()(propagator_state_t& state, const stepper_t& stepper,
-                  result_type& result) const {
+                  result_type& result, const Logger& logger) const {
     using namespace Acts::UnitLiterals;
-
-    const auto& logger = state.options.logger;
 
     // only generate measurements on surfaces
     if (not state.navigation.currentSurface) {
@@ -160,10 +158,7 @@ Measurements createMeasurements(const propagator_t& propagator,
   using Aborters = Acts::AbortList<Acts::EndOfWorldReached>;
 
   // Set options for propagator
-  auto logger =
-      Acts::getDefaultLogger("MeasurementCreator", Acts::Logging::INFO);
-  Acts::PropagatorOptions<Actions, Aborters> options(
-      geoCtx, magCtx, Acts::LoggerWrapper(*logger));
+  Acts::PropagatorOptions<Actions, Aborters> options(geoCtx, magCtx);
   auto& creator = options.actionList.get<MeasurementsCreator>();
   creator.resolutions = resolutions;
   creator.rng = &rng;

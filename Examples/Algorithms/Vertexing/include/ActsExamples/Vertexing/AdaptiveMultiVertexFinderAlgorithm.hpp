@@ -10,17 +10,19 @@
 
 #include "Acts/Definitions/Algebra.hpp"
 #include "Acts/MagneticField/MagneticFieldProvider.hpp"
-#include "ActsExamples/Framework/BareAlgorithm.hpp"
+#include "ActsExamples/Framework/IAlgorithm.hpp"
 
 #include <string>
 
 namespace ActsExamples {
 
-class AdaptiveMultiVertexFinderAlgorithm final : public BareAlgorithm {
+class AdaptiveMultiVertexFinderAlgorithm final : public IAlgorithm {
  public:
   struct Config {
-    /// Input track parameters collection
+    /// Optional. Input track parameters collection
     std::string inputTrackParameters;
+    /// Optional. Input trajectories container.
+    std::string inputTrajectories;
     /// Output proto vertex collection
     std::string outputProtoVertices;
     /// Output vertex collection

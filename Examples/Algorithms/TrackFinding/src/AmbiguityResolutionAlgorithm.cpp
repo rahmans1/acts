@@ -8,6 +8,7 @@
 
 #include "ActsExamples/TrackFinding/AmbiguityResolutionAlgorithm.hpp"
 
+#include "Acts/EventData/MultiTrajectoryHelpers.hpp"
 #include "ActsExamples/EventData/IndexSourceLink.hpp"
 #include "ActsExamples/EventData/Measurement.hpp"
 #include "ActsExamples/EventData/Track.hpp"
@@ -22,7 +23,7 @@
 ActsExamples::AmbiguityResolutionAlgorithm::AmbiguityResolutionAlgorithm(
     ActsExamples::AmbiguityResolutionAlgorithm::Config cfg,
     Acts::Logging::Level lvl)
-    : ActsExamples::BareAlgorithm("AmbiguityResolutionAlgorithm", lvl),
+    : ActsExamples::IAlgorithm("AmbiguityResolutionAlgorithm", lvl),
       m_cfg(std::move(cfg)) {
   if (m_cfg.inputSourceLinks.empty()) {
     throw std::invalid_argument("Missing source links input collection");
@@ -30,19 +31,8 @@ ActsExamples::AmbiguityResolutionAlgorithm::AmbiguityResolutionAlgorithm(
   if (m_cfg.inputTrajectories.empty()) {
     throw std::invalid_argument("Missing trajectories input collection");
   }
-  if (m_cfg.inputTrackParameters.empty()) {
-    throw std::invalid_argument("Missing track parameter input collection");
-  }
-  if (m_cfg.inputTrackParametersTips.empty()) {
-    throw std::invalid_argument(
-        "Missing track parameters tips input collection");
-  }
-  if (m_cfg.outputTrackParameters.empty()) {
-    throw std::invalid_argument("Missing track parameter output collection");
-  }
-  if (m_cfg.outputTrackParametersTips.empty()) {
-    throw std::invalid_argument(
-        "Missing track parameters tips output collection");
+  if (m_cfg.outputTrajectories.empty()) {
+    throw std::invalid_argument("Missing trajectories output collection");
   }
 }
 
@@ -67,8 +57,8 @@ std::vector<std::size_t> computeSharedHits(
       }
 
       const std::size_t indexHit =
-          static_cast<const ActsExamples::IndexSourceLink&>(
-              state.uncalibrated())
+          state.getUncalibratedSourceLink()
+              .template get<ActsExamples::IndexSourceLink>()
               .index();
 
       ++hitCountPerMeasurement[indexHit];
@@ -90,8 +80,8 @@ std::vector<std::size_t> computeSharedHits(
       }
 
       const std::size_t indexHit =
-          static_cast<const ActsExamples::IndexSourceLink&>(
-              state.uncalibrated())
+          state.getUncalibratedSourceLink()
+              .template get<ActsExamples::IndexSourceLink>()
               .index();
 
       if (hitCountPerMeasurement[indexHit] > 1) {
@@ -105,8 +95,9 @@ std::vector<std::size_t> computeSharedHits(
   return sharedHitCountPerTrack;
 }
 
-std::size_t computeTrackHits(const Acts::VectorMultiTrajectory& multiTrajectory,
-                             const std::size_t tip) {
+std::size_t computeTrackHits(
+    const Acts::ConstVectorMultiTrajectory& multiTrajectory,
+    const std::size_t tip) {
   std::size_t result = 0;
 
   multiTrajectory.visitBackwards(tip, [&](const auto&) { ++result; });
@@ -123,19 +114,30 @@ ActsExamples::ProcessCode ActsExamples::AmbiguityResolutionAlgorithm::execute(
       ctx.eventStore.get<IndexSourceLinkContainer>(m_cfg.inputSourceLinks);
   const auto& trajectories =
       ctx.eventStore.get<TrajectoriesContainer>(m_cfg.inputTrajectories);
-  const auto& trackParameters =
-      ctx.eventStore.get<TrackParametersContainer>(m_cfg.inputTrackParameters);
-  const auto& trackTips =
-      ctx.eventStore.get<std::vector<std::pair<size_t, size_t>>>(
-          m_cfg.inputTrackParametersTips);
 
-  throw_assert(trackParameters.size() == trackTips.size(),
-               "Track tip count does not match track parameter count");
+  TrackParametersContainer trackParameters;
+  std::vector<std::pair<size_t, size_t>> trackTips;
+
+  for (std::size_t iTraj = 0; iTraj < trajectories.size(); ++iTraj) {
+    const auto& traj = trajectories[iTraj];
+    for (auto tip : traj.tips()) {
+      if (!traj.hasTrackParameters(tip)) {
+        continue;
+      }
+      auto trajState = Acts::MultiTrajectoryHelpers::trajectoryState(
+          traj.multiTrajectory(), tip);
+      if (trajState.nMeasurements < m_cfg.nMeasurementsMin) {
+        continue;
+      }
+      trackParameters.push_back(traj.trackParameters(tip));
+      trackTips.emplace_back(iTraj, tip);
+    }
+  }
 
   std::vector<uint32_t> hitCount(trackParameters.size(), 0);
   for (std::size_t i = 0; i < trackParameters.size(); ++i) {
-    const auto [indexTraj, tip] = trackTips[i];
-    const auto& traj = trajectories[indexTraj];
+    const auto [iTraj, tip] = trackTips[i];
+    const auto& traj = trajectories[iTraj];
     hitCount[i] = computeTrackHits(traj.multiTrajectory(), tip);
   }
 
@@ -179,18 +181,27 @@ ActsExamples::ProcessCode ActsExamples::AmbiguityResolutionAlgorithm::execute(
   ACTS_INFO("Resolved to " << trackIndices.size() << " tracks from "
                            << trackParameters.size());
 
-  TrackParametersContainer outputTrackParameters;
-  std::vector<std::pair<size_t, size_t>> outputTrackParametersTips;
-  outputTrackParameters.reserve(trackIndices.size());
-  outputTrackParametersTips.reserve(trackIndices.size());
-  for (auto indexTrack : trackIndices) {
-    outputTrackParameters.push_back(trackParameters[indexTrack]);
-    outputTrackParametersTips.push_back(trackTips[indexTrack]);
+  TrajectoriesContainer outputTrajectories;
+  outputTrajectories.reserve(trajectories.size());
+  for (std::size_t iTraj = 0; iTraj < trajectories.size(); ++iTraj) {
+    const auto& traj = trajectories[iTraj];
+
+    std::vector<Acts::MultiTrajectoryTraits::IndexType> tips;
+    Trajectories::IndexedParameters parameters;
+
+    for (auto iTrack : trackIndices) {
+      if (trackTips[iTrack].first != iTraj) {
+        continue;
+      }
+      const auto tip = trackTips[iTrack].second;
+      tips.push_back(tip);
+      parameters.emplace(tip, trackParameters[iTrack]);
+    }
+    if (!tips.empty()) {
+      outputTrajectories.emplace_back(traj.multiTrajectory(), tips, parameters);
+    }
   }
 
-  ctx.eventStore.add(m_cfg.outputTrackParameters,
-                     std::move(outputTrackParameters));
-  ctx.eventStore.add(m_cfg.outputTrackParametersTips,
-                     std::move(outputTrackParametersTips));
+  ctx.eventStore.add(m_cfg.outputTrajectories, std::move(outputTrajectories));
   return ActsExamples::ProcessCode::SUCCESS;
 }

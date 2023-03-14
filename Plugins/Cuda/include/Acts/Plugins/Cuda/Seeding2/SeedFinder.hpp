@@ -15,6 +15,7 @@
 #include "Acts/Seeding/Seed.hpp"
 #include "Acts/Seeding/SeedFilterConfig.hpp"
 #include "Acts/Seeding/SeedFinderConfig.hpp"
+#include "Acts/Seeding/SpacePointGrid.hpp"
 #include "Acts/Utilities/Logger.hpp"
 
 // System include(s).
@@ -33,6 +34,7 @@ class SeedFinder {
   /// Create a CUDA backed seed finder object
   ///
   /// @param commonConfig Configuration shared with @c Acts::SeedFinder
+  /// @param seedFinderOptions options als shared with Acts::SeedFinder
   /// @param seedFilterConfig Configuration shared with @c Acts::SeedFilter
   /// @param tripletFilterConfig Configuration for the GPU based triplet
   ///        filtering
@@ -40,6 +42,7 @@ class SeedFinder {
   /// @param logger A @c Logger instance
   ///
   SeedFinder(SeedFinderConfig<external_spacepoint_t> commonConfig,
+             const SeedFinderOptions& seedFinderOptions,
              const SeedFilterConfig& seedFilterConfig,
              const TripletFilterConfig& tripletFilterConfig, int device = 0,
              std::unique_ptr<const Logger> logger =
@@ -55,7 +58,9 @@ class SeedFinder {
   /// @return vector in which all found seeds for this group are stored.
   template <typename sp_range_t>
   std::vector<Seed<external_spacepoint_t> > createSeedsForGroup(
-      sp_range_t bottomSPs, sp_range_t middleSPs, sp_range_t topSPs) const;
+      Acts::SpacePointGrid<external_spacepoint_t>& grid,
+      const sp_range_t& bottomSPs, const std::size_t middleSPs,
+      const sp_range_t& topSPs) const;
 
   /// set logging instance
   ///
@@ -70,6 +75,7 @@ class SeedFinder {
 
   /// Configuration for the seed finder
   SeedFinderConfig<external_spacepoint_t> m_commonConfig;
+  SeedFinderOptions m_seedFinderOptions;
   /// Configuration for the (host) seed filter
   SeedFilterConfig m_seedFilterConfig;
   /// Configuration for the (device) triplet filter

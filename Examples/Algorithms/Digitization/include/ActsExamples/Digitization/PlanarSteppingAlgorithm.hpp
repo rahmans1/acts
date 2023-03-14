@@ -9,7 +9,7 @@
 #pragma once
 
 #include "Acts/Geometry/GeometryIdentifier.hpp"
-#include "ActsExamples/Framework/BareAlgorithm.hpp"
+#include "ActsExamples/Framework/IAlgorithm.hpp"
 #include "ActsExamples/Framework/RandomNumbers.hpp"
 
 #include <memory>
@@ -27,7 +27,7 @@ class TrackingGeometry;
 namespace ActsExamples {
 
 /// Create planar clusters from simulation hits.
-class PlanarSteppingAlgorithm final : public BareAlgorithm {
+class PlanarSteppingAlgorithm final : public IAlgorithm {
  public:
   struct Config {
     /// Input collection of simulated hits.
@@ -62,7 +62,7 @@ class PlanarSteppingAlgorithm final : public BareAlgorithm {
   ///
   /// @param txt is the algorithm context with event information
   /// @return a process code indication success or failure
-  ProcessCode execute(const AlgorithmContext& ctx) const final override;
+  ProcessCode execute(const AlgorithmContext& ctx) const override;
 
   /// Readonly access to the config
   const Config& config() const { return m_cfg; }

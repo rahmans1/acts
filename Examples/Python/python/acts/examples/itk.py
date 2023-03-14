@@ -7,6 +7,7 @@ from acts.examples import TGeoDetector
 
 from acts.examples.reconstruction import (
     SeedFinderConfigArg,
+    SeedFinderOptionsArg,
     SeedFilterConfigArg,
     SpacePointGridConfigArg,
     SeedingAlgorithmConfigArg,
@@ -53,6 +54,22 @@ def buildITkGeometry(
     equidistant = TGeoDetector.Config.BinningType.equidistant
     arbitrary = TGeoDetector.Config.BinningType.arbitrary
 
+    # ## Create TGeo geometry from `tgeo_fileName = itk-hgtd/ATLAS-ITk-HGTD.tgeo.root`.
+    # The `subVolumeName` and `sensitiveNames` specified below may change with new geometry versions
+    # in the root file (it changed ATLAS-P2-23 -> ATLAS-P2-RUN4-01-00-00).
+    # `TGeoParser` searches the tree below `subVolumeName` for all elements that match any of the
+    # list of `sensitiveNames` wildcards and also fall inside the `rRange`/`zRange` selections.
+    # If no `TGeoDetectorElements`` are found for an ACTS `Volume()`, then `TGeoDetector.create()`
+    # raises an exception along the lines of:
+    # 1. Missing tracking geometry - or
+    # 2. Incorrect binning configuration found: Number of configurations does not match number of protolayers
+    # Unless you know in advance, working out what names to change may not be trivial.
+    # I (@timadye) used a combination of
+    # * adding `printf`s in `Acts::TGeoParser::select()` (useful to find what it found with the old version),
+    # * printing object descendants from root (good for making long lists, but navigation cumbersome), and
+    # * browsing `TGeoManager` with ROOT's `TBrowser` (easy to navigate, but have to scan through long lists by eye).
+    # If the detector has moved significantly, it may be necessary to change the `rRange`/`zRange`.
+    # This specification should be kept in sync with `itk-hgtd/tgeo-atlas-itk-hgtd.json`.
     return TGeoDetector.create(
         fileName=str(tgeo_fileName),
         mdecorator=matDeco,
@@ -71,8 +88,8 @@ def buildITkGeometry(
                 binToleranceZ=(5 * u.mm, 5 * u.mm),
                 binTolerancePhi=(0.025 * u.mm, 0.025 * u.mm),
                 layers=LayerTriplet(True),
-                subVolumeName=LayerTriplet("Pixel::Pixel"),
-                sensitiveNames=LayerTriplet(["Pixel::siLog"]),
+                subVolumeName=LayerTriplet("ITkPixel__ITkPixelDetector"),
+                sensitiveNames=LayerTriplet(["ITkPixel__*_Sensor"]),
                 sensitiveAxes=LayerTriplet("YZX"),
                 rRange=LayerTriplet((0 * u.mm, 135 * u.mm)),
                 zRange=LayerTriplet(
@@ -109,8 +126,8 @@ def buildITkGeometry(
                 binToleranceZ=(5 * u.mm, 5 * u.mm),
                 binTolerancePhi=(0.025 * u.mm, 0.025 * u.mm),
                 layers=LayerTriplet(True),
-                subVolumeName=LayerTriplet("Pixel::Pixel"),
-                sensitiveNames=LayerTriplet(["Pixel::siLog"]),
+                subVolumeName=LayerTriplet("ITkPixel__ITkPixelDetector"),
+                sensitiveNames=LayerTriplet(["ITkPixel__*_Sensor"]),
                 sensitiveAxes=LayerTriplet("YZX"),
                 rRange=LayerTriplet((135 * u.mm, 350 * u.mm)),
                 zRange=LayerTriplet(
@@ -149,15 +166,11 @@ def buildITkGeometry(
                 binToleranceZ=(5 * u.mm, 5 * u.mm),
                 binTolerancePhi=(0.025 * u.mm, 0.025 * u.mm),
                 layers=LayerTriplet(True),
-                subVolumeName=LayerTriplet(
-                    negative="*",
-                    central="SCT::SCT_Barrel",
-                    positive="*",
-                ),
+                subVolumeName=LayerTriplet("ITkStrip__ITkStrip"),
                 sensitiveNames=LayerTriplet(
-                    negative=["SCT::ECSensor*"],
-                    central=["SCT::BRLSensor*"],
-                    positive=["SCT::ECSensor*"],
+                    negative=["ITkStrip__ECSensor*"],
+                    central=["ITkStrip__BRLSensor*"],
+                    positive=["ITkStrip__ECSensor*"],
                 ),
                 sensitiveAxes=LayerTriplet("XYZ"),
                 rRange=LayerTriplet(
@@ -218,6 +231,16 @@ def buildITkGeometry(
                     "EC4": [[756.901, 811.482], [811.482, 866.062]],
                     "EC5": [[867.462, 907.623], [907.623, 967.785]],
                 },
+                splitPatterns={
+                    ".*BRL.*MS.*": "MS",
+                    ".*BRL.*SS.*": "SS",
+                    ".*EC.*Sensor(|Back)0.*": "EC0",
+                    ".*EC.*Sensor(|Back)1.*": "EC1",
+                    ".*EC.*Sensor(|Back)2.*": "EC2",
+                    ".*EC.*Sensor(|Back)3.*": "EC3",
+                    ".*EC.*Sensor(|Back)4.*": "EC4",
+                    ".*EC.*Sensor(|Back)5.*": "EC5",
+                },
             ),
             Volume(
                 name="HGTD",
@@ -225,8 +248,8 @@ def buildITkGeometry(
                 binToleranceZ=(5 * u.mm, 5 * u.mm),
                 binTolerancePhi=(0.25 * u.mm, 0.25 * u.mm),
                 layers=LayerTriplet(positive=True, central=False, negative=True),
-                subVolumeName=LayerTriplet("HGTD::HGTD"),
-                sensitiveNames=LayerTriplet(["HGTD::HGTDSiSensor*"]),
+                subVolumeName=LayerTriplet("HGTD__HGTD"),
+                sensitiveNames=LayerTriplet(["HGTD__HGTDSiSensor*"]),
                 sensitiveAxes=LayerTriplet("XYZ"),
                 rRange=LayerTriplet(
                     negative=(0 * u.mm, 1050 * u.mm),
@@ -263,6 +286,9 @@ def buildITkGeometry(
 
 def itkSeedingAlgConfig(inputSpacePointsType):
 
+    if inputSpacePointsType not in ["PixelSpacePoints", "StripSpacePoints"]:
+        raise RuntimeError("Invalid inputSpacePointsType")
+
     # variables that do not change for pixel and strip SPs:
     zMax = 3000 * u.mm
     zMin = -3000 * u.mm
@@ -277,6 +303,7 @@ def itkSeedingAlgConfig(inputSpacePointsType):
     bFieldInZ = 2 * u.T
     deltaRMin = 20 * u.mm
     maxPtScattering = float("inf") * u.GeV
+    deltaZMax = float("inf") * u.mm
     zBinEdges = [
         -3000.0,
         -2500.0,
@@ -306,7 +333,6 @@ def itkSeedingAlgConfig(inputSpacePointsType):
     ]  # if useVariableMiddleSPRange is set to false, the vector rRangeMiddleSP can be used to define a fixed r range for each z bin: {{rMin, rMax}, ...}. If useVariableMiddleSPRange is set to false and the vector is empty, the cuts won't be applied
     useVariableMiddleSPRange = True  # if useVariableMiddleSPRange is true, the values in rRangeMiddleSP will be calculated based on r values of the SPs and deltaRMiddleSPRange
     binSizeR = 1 * u.mm
-    forceRadialSorting = True
     seedConfirmation = True
     centralSeedConfirmationRange = acts.SeedConfirmationRangeConfig(
         zMinSeedConf=-250 * u.mm,
@@ -328,12 +354,14 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         seedConfMaxZOrigin=150.0 * u.mm,
         minImpactSeedConf=1.0 * u.mm,
     )
+    zOriginWeightFactor = 1
     compatSeedWeight = 100
-    curvatureSortingInFilter = True
     phiMin = 0
     phiMax = 2 * math.pi
     phiBinDeflectionCoverage = 3
     numPhiNeighbors = 1
+    # only used in orthogonal seeding
+    deltaPhiMax = 0.025
 
     # variables that change for pixel and strip SPs:
     if inputSpacePointsType == "PixelSpacePoints":
@@ -347,7 +375,6 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         deltaRMaxBottomSP = 120 * u.mm
         interactionPointCut = True
         arithmeticAverageCotTheta = False
-        deltaZMax = 600 * u.mm
         impactMax = 2 * u.mm
         zBinsCustomLooping = [
             1,
@@ -394,13 +421,13 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         seedConfirmationFilter = True
         impactWeightFactor = 100
         compatSeedLimit = 3
-        numSeedIncrement = 10**100  # inf
+        numSeedIncrement = float("inf")
         seedWeightIncrement = 0
         useDetailedDoubleMeasurementInfo = False
         maxSeedsPerSpMConf = 5
         maxQualitySeedsPerSpMConf = 5
         useDeltaRorTopRadius = True
-    else:
+    elif inputSpacePointsType == "StripSpacePoints":
         outputSeeds = "StripSeeds"
         allowSeparateRMax = True
         rMaxGridConfig = 1000.0 * u.mm
@@ -411,7 +438,6 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         deltaRMaxBottomSP = deltaRMaxTopSP
         interactionPointCut = False
         arithmeticAverageCotTheta = True
-        deltaZMax = 900 * u.mm
         impactMax = 20 * u.mm
         zBinsCustomLooping = [6, 7, 5, 8, 4, 9, 3, 10, 2, 11, 1]
         skipPreviousTopSP = False
@@ -460,8 +486,8 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         sigmaScattering=sigmaScattering,
         radLengthPerSeed=radLengthPerSeed,
         minPt=minPt,
-        bFieldInZ=bFieldInZ,
         impactMax=impactMax,
+        deltaPhiMax=deltaPhiMax,
         interactionPointCut=interactionPointCut,
         arithmeticAverageCotTheta=arithmeticAverageCotTheta,
         deltaZMax=deltaZMax,
@@ -472,7 +498,6 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         rRangeMiddleSP=rRangeMiddleSP,
         useVariableMiddleSPRange=useVariableMiddleSPRange,
         binSizeR=binSizeR,
-        forceRadialSorting=forceRadialSorting,
         seedConfirmation=seedConfirmation,
         centralSeedConfirmationRange=centralSeedConfirmationRange,
         forwardSeedConfirmationRange=forwardSeedConfirmationRange,
@@ -483,16 +508,18 @@ def itkSeedingAlgConfig(inputSpacePointsType):
         collisionRegion=(collisionRegionMin, collisionRegionMax),
         r=(None, rMaxSeedFinderConfig),
         z=(zMin, zMax),
-        beamPos=beamPos,
     )
+
+    seedFinderOptionsArg = SeedFinderOptionsArg(bFieldInZ=bFieldInZ, beamPos=beamPos)
+
     seedFilterConfigArg = SeedFilterConfigArg(
         impactWeightFactor=impactWeightFactor,
+        zOriginWeightFactor=zOriginWeightFactor,
         compatSeedWeight=compatSeedWeight,
         compatSeedLimit=compatSeedLimit,
         numSeedIncrement=numSeedIncrement,
         seedWeightIncrement=seedWeightIncrement,
         seedConfirmation=seedConfirmation,
-        curvatureSortingInFilter=curvatureSortingInFilter,
         maxSeedsPerSpMConf=maxSeedsPerSpMConf,
         maxQualitySeedsPerSpMConf=maxQualitySeedsPerSpMConf,
         useDeltaRorTopRadius=useDeltaRorTopRadius,
@@ -512,8 +539,9 @@ def itkSeedingAlgConfig(inputSpacePointsType):
     )
 
     return (
+        seedingAlgorithmConfigArg,
         seedFinderConfigArg,
+        seedFinderOptionsArg,
         seedFilterConfigArg,
         spacePointGridConfigArg,
-        seedingAlgorithmConfigArg,
     )
